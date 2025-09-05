@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Salvamento de Tribo</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; font-family: monospace; }
+        button { padding: 10px 15px; margin: 5px; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Salvamento de Tribo</h1>
+    
+    <div class="test-section">
+        <h3>1. Verificar localStorage atual</h3>
+        <button onclick="checkLocalStorage()">Verificar localStorage</button>
+        <div id="localStorage-result" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Formulário de Teste</h3>
+        <form id="triboForm">
+            <label>Nome da Tribo:</label>
+            <input type="text" name="nome" value="Tribo Teste" required>
+            
+            <label>Cor:</label>
+            <input type="color" name="cor" value="#ff0000">
+            
+            <label>Líder:</label>
+            <input type="text" name="lider" value="João Silva">
+            
+            <label>Grito de Guerra:</label>
+            <textarea name="gritoGuerra">Vamos vencer!</textarea>
+            
+            <button type="submit">Salvar Tribo</button>
+        </form>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Log de Debug</h3>
+        <div id="debug-log" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Verificar após salvamento</h3>
+        <button onclick="checkAfterSave()">Verificar dados após salvamento</button>
+        <div id="after-save-result" class="log"></div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let originalConsoleLog = console.log;
+        let originalConsoleError = console.error;
+        
+        function logToDiv(message, type = 'log') {
+            const debugLog = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.innerHTML += `<div style="color: ${type === 'error' ? 'red' : 'black'}">[${timestamp}] ${message}</div>`;
+        }
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            logToDiv(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            logToDiv(args.join(' '), 'error');
+        };
+        
+        function checkLocalStorage() {
+            const result = document.getElementById('localStorage-result');
+            const savedData = localStorage.getItem('acampamentosCatolicos');
+            
+            if (savedData) {
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    result.innerHTML = `
+                        <strong>Dados encontrados no localStorage:</strong><br>
+                        Tribos: ${parsedData.tribos ? parsedData.tribos.length : 0}<br>
+                        <pre>${JSON.stringify(parsedData.tribos, null, 2)}</pre>
+                    `;
+                } catch (error) {
+                    result.innerHTML = `<strong>Erro ao parsear dados:</strong> ${error.message}`;
+                }
+            } else {
+                result.innerHTML = '<strong>Nenhum dado encontrado no localStorage</strong>';
+            }
+        }
+        
+        function checkAfterSave() {
+            const result = document.getElementById('after-save-result');
+            
+            // Verificar appData em memória
+            if (typeof appData !== 'undefined') {
+                result.innerHTML = `
+                    <strong>appData em memória:</strong><br>
+                    Tribos: ${appData.tribos ? appData.tribos.length : 0}<br>
+                    <pre>${JSON.stringify(appData.tribos, null, 2)}</pre>
+                `;
+            } else {
+                result.innerHTML = '<strong>appData não está definido</strong>';
+            }
+            
+            // Verificar localStorage novamente
+            checkLocalStorage();
+        }
+        
+        // Interceptar o formulário
+        document.getElementById('triboForm').addEventListener('submit', function(event) {
+            console.log('Formulário submetido');
+            
+            // Verificar se as funções existem
+            if (typeof saveTribo === 'function') {
+                console.log('Função saveTribo encontrada, chamando...');
+                saveTribo(event, null);
+            } else {
+                console.error('Função saveTribo não encontrada!');
+                event.preventDefault();
+            }
+        });
+        
+        // Verificar se o script principal foi carregado
+        window.addEventListener('load', function() {
+            console.log('Página carregada');
+            console.log('appData existe?', typeof appData !== 'undefined');
+            console.log('saveTribo existe?', typeof saveTribo === 'function');
+            console.log('generateId existe?', typeof generateId === 'function');
+            
+            if (typeof appData !== 'undefined') {
+                console.log('appData.tribos:', appData.tribos);
+            }
+        });
+    </script>
+</body>
+</html>

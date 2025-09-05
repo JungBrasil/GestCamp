@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Conectividade Supabase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Teste de Conectividade Supabase</h1>
+        
+        <div class="test-section">
+            <h3>📡 Testes de Conectividade</h3>
+            <button onclick="testBasicConnectivity()">Teste Básico de Conectividade</button>
+            <button onclick="testSupabaseEndpoint()">Teste Endpoint Supabase</button>
+            <button onclick="testCORS()">Teste CORS</button>
+            <button onclick="clearLog()">Limpar Log</button>
+        </div>
+        
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ymislcrrkcroahikwcm.supabase.co';
+        const logElement = document.getElementById('log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logElement.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function clearLog() {
+            logElement.textContent = '';
+        }
+        
+        async function testBasicConnectivity() {
+            log('Iniciando teste básico de conectividade...');
+            
+            try {
+                log(`Testando conectividade com: ${SUPABASE_URL}`);
+                
+                const response = await fetch(SUPABASE_URL, {
+                    method: 'GET',
+                    mode: 'no-cors' // Evita problemas de CORS para teste básico
+                });
+                
+                log('Resposta recebida (modo no-cors)', 'success');
+                log(`Status: ${response.status || 'opaque'}`);
+                log(`Type: ${response.type}`);
+                
+            } catch (error) {
+                log(`Erro na conectividade básica: ${error.message}`, 'error');
+                log(`Tipo do erro: ${error.name}`, 'error');
+            }
+        }
+        
+        async function testSupabaseEndpoint() {
+            log('Testando endpoint REST do Supabase...');
+            
+            try {
+                const restUrl = `${SUPABASE_URL}/rest/v1/`;
+                log(`Testando: ${restUrl}`);
+                
+                const response = await fetch(restUrl, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltaXNsY3Jya2Nyb2VhaGlrd2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwODMwMzMsImV4cCI6MjA3MjY1OTAzM30.3usCMB-JMaHNgzhNW7Tolp2oOz8BzqV5yDLA69BFV_Q',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltaXNsY3Jya2Nyb2VhaGlrd2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwODMwMzMsImV4cCI6MjA3MjY1OTAzM30.3usCMB-JMaHNgzhNW7Tolp2oOz8BzqV5yDLA69BFV_Q'
+                    }
+                });
+                
+                log(`Status: ${response.status}`, response.ok ? 'success' : 'error');
+                log(`Status Text: ${response.statusText}`);
+                
+                if (response.ok) {
+                    const data = await response.text();
+                    log(`Resposta: ${data.substring(0, 200)}...`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log(`Erro: ${errorText}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`Erro no endpoint REST: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+        }
+        
+        async function testCORS() {
+            log('Testando configurações de CORS...');
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+                    method: 'OPTIONS'
+                });
+                
+                log(`Status OPTIONS: ${response.status}`, response.ok ? 'success' : 'warning');
+                
+                // Verificar headers CORS
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                };
+                
+                log('Headers CORS:');
+                Object.entries(corsHeaders).forEach(([key, value]) => {
+                    log(`  ${key}: ${value || 'não definido'}`);
+                });
+                
+            } catch (error) {
+                log(`Erro no teste CORS: ${error.message}`, 'error');
+            }
+        }
+        
+        // Teste automático ao carregar a página
+        window.addEventListener('load', () => {
+            log('Página carregada. Pronto para testes de conectividade.');
+            log('Clique nos botões acima para executar os testes.');
+        });
+    </script>
+</body>
+</html>

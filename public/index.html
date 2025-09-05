@@ -7,10 +7,114 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Supabase -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 </head>
 <body>
-    <div class="container">
+    <!-- Seção de Autenticação -->
+    <div id="auth-section" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1><i class="fas fa-cross"></i> GestCamp</h1>
+                <p>Sistema de Gestão de Acampamentos Católicos</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" onclick="showAuthTab('login')">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+                <button class="auth-tab-btn" onclick="showAuthTab('register')">
+                    <i class="fas fa-user-plus"></i> Registrar
+                </button>
+            </div>
+            
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form active">
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-email">
+                            <i class="fas fa-envelope"></i> Email
+                        </label>
+                        <input type="email" id="login-email" required placeholder="seu@email.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login-password">
+                            <i class="fas fa-lock"></i> Senha
+                        </label>
+                        <input type="password" id="login-password" required placeholder="Sua senha">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <i class="fas fa-sign-in-alt"></i> Entrar
+                    </button>
+                </form>
+                
+                <div class="auth-links">
+                    <a href="#" onclick="showForgotPassword()">Esqueceu a senha?</a>
+                </div>
+            </div>
+            
+            <!-- Register Form -->
+            <div id="register-form" class="auth-form">
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="register-name">
+                            <i class="fas fa-user"></i> Nome Completo
+                        </label>
+                        <input type="text" id="register-name" required placeholder="Seu nome completo">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-email">
+                            <i class="fas fa-envelope"></i> Email
+                        </label>
+                        <input type="email" id="register-email" required placeholder="seu@email.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-password">
+                            <i class="fas fa-lock"></i> Senha
+                        </label>
+                        <input type="password" id="register-password" required placeholder="Mínimo 6 caracteres" minlength="6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-confirm-password">
+                            <i class="fas fa-lock"></i> Confirmar Senha
+                        </label>
+                        <input type="password" id="register-confirm-password" required placeholder="Confirme sua senha">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-full">
+                        <i class="fas fa-user-plus"></i> Registrar
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Forgot Password Form -->
+            <div id="forgot-password-form" class="auth-form">
+                <form onsubmit="handleForgotPassword(event)">
+                    <div class="form-group">
+                        <label for="forgot-email">
+                            <i class="fas fa-envelope"></i> Email
+                        </label>
+                        <input type="email" id="forgot-email" required placeholder="seu@email.com">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning btn-full">
+                        <i class="fas fa-paper-plane"></i> Enviar Link de Recuperação
+                    </button>
+                </form>
+                
+                <div class="auth-links">
+                    <a href="#" onclick="showAuthTab('login')">Voltar ao Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Aplicação Principal -->
+    <div id="main-app" class="container" style="display: none;">
         <!-- Header -->
         <header class="header">
             <h1><i class="fas fa-cross"></i> Sistema de Gestão de Acampamentos Católicos</h1>
@@ -20,27 +124,25 @@
                     <option value="">Selecione um acampamento...</option>
                 </select>
             </div>
+            <div id="user-info" class="user-info"></div>
             <div class="header-actions">
-                <button class="btn btn-cloud" onclick="configSupabase()" id="configSupabaseBtn">
-                    <i class="fas fa-cog"></i> Configurar Nuvem
+                <div class="connection-status" id="connection-status">
+                    <i class="fas fa-circle" id="status-icon"></i>
+                    <span id="status-text">Conectado</span>
+                </div>
+                <button class="btn btn-info" id="user-management-btn" onclick="showUserManagement()" style="display: none;">
+                    <i class="fas fa-users-cog"></i> Usuários
                 </button>
-                <button class="btn btn-sync" onclick="syncWithCloud()" id="syncBtn" style="display: none;">
-                    <i class="fas fa-sync"></i> Sincronizar
-                </button>
-                <button class="btn btn-upload" onclick="uploadToCloud()" id="uploadBtn" style="display: none;">
-                    <i class="fas fa-cloud-upload-alt"></i> Enviar para Nuvem
-                </button>
-                <button class="btn btn-primary" onclick="exportarDados()">
-                    <i class="fas fa-download"></i> Exportar Dados
-                </button>
-                <button class="btn btn-success" onclick="exportarPDF()">
-                    <i class="fas fa-file-pdf"></i> Exportar PDF
-                </button>
-                <button class="btn btn-secondary" onclick="importarDados()">
-                    <i class="fas fa-upload"></i> Importar Dados
-                </button>
-                <button class="btn btn-info" onclick="visualizarHistorico()">
-                    <i class="fas fa-history"></i> Histórico
+                <div class="export-group">
+                    <button class="btn btn-success" onclick="exportarPDF()">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button class="btn btn-primary" onclick="exportarDados()">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+                <button class="btn btn-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Sair
                 </button>
             </div>
         </header>
@@ -502,6 +604,7 @@
                 <!-- Formulários serão carregados aqui -->
             </div>
         </div>
+        </main>
     </div>
 
     <!-- Notification Toast -->

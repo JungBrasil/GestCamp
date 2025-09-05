@@ -40,6 +40,88 @@ let appData = {
     perguntasPersonalizadas: [] // { id, pergunta, tipo, opcoes, obrigatoria, categoria, ativa, criadaEm }
 };
 
+// Funções de Autenticação
+function showAuthTab(tabName) {
+    // Remover classe active de todas as abas
+    document.querySelectorAll('.auth-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+    
+    // Ativar aba selecionada
+    event.target.classList.add('active');
+    document.getElementById(tabName + '-form').classList.add('active');
+}
+
+function showForgotPassword() {
+    document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+    document.getElementById('forgot-password-form').classList.add('active');
+}
+
+async function handleLogin(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    if (!email || !password) {
+        showToast('Por favor, preencha todos os campos', 'error');
+        return;
+    }
+    
+    try {
+        await AuthManager.signIn(email, password);
+    } catch (error) {
+        console.error('Erro no login:', error);
+    }
+}
+
+async function handleRegister(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('register-name').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('register-confirm-password').value;
+    
+    if (!name || !email || !password || !confirmPassword) {
+        showToast('Por favor, preencha todos os campos', 'error');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showToast('As senhas não coincidem', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showToast('A senha deve ter pelo menos 6 caracteres', 'error');
+        return;
+    }
+    
+    try {
+        await AuthManager.signUp(email, password, { full_name: name });
+    } catch (error) {
+        console.error('Erro no registro:', error);
+    }
+}
+
+async function handleForgotPassword(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('forgot-email').value;
+    
+    if (!email) {
+        showToast('Por favor, informe seu email', 'error');
+        return;
+    }
+    
+    try {
+        await AuthManager.resetPassword(email);
+        showAuthTab('login');
+    } catch (error) {
+        console.error('Erro ao resetar senha:', error);
+    }
+}
+
 // Inicialização do aplicativo
 document.addEventListener('DOMContentLoaded', function() {
     loadData();
@@ -78,6 +160,89 @@ function saveData() {
         console.error('Erro ao salvar dados:', error);
         showToast('Erro ao salvar dados', 'error');
     }
+}
+
+// Gerenciamento de roles de usuário (apenas para admins)
+function showUserManagement() {
+    if (!PermissionManager.hasPermission('manage_users')) {
+        showToast('Você não tem permissão para gerenciar usuários', 'error');
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Gerenciar Usuários</h3>
+                <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="user-management">
+                    <div class="search-section">
+                        <input type="email" id="user-email-search" placeholder="Email do usuário" class="form-control">
+                        <button onclick="searchUser()" class="btn btn-primary">Buscar</button>
+                    </div>
+                    <div id="user-search-result"></div>
+                    <div class="role-assignment">
+                        <h4>Atribuir Role</h4>
+                        <select id="role-select" class="form-control">
+                            <option value="volunteer">Voluntário</option>
+                            <option value="leader">Líder</option>
+                            <option value="coordinator">Coordenador</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                        <button onclick="assignRole()" class="btn btn-success">Atribuir Role</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function searchUser() {
+    const email = document.getElementById('user-email-search').value;
+    const resultDiv = document.getElementById('user-search-result');
+    
+    if (!email) {
+        resultDiv.innerHTML = '<p class="error">Digite um email válido</p>';
+        return;
+    }
+    
+    // Simular busca de usuário (em produção, seria uma consulta ao banco)
+    resultDiv.innerHTML = `
+        <div class="user-result">
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Role atual:</strong> <span id="current-role">Carregando...</span></p>
+        </div>
+    `;
+    
+    // Aqui você faria uma consulta real ao Supabase para buscar o usuário
+    setTimeout(() => {
+        document.getElementById('current-role').textContent = 'volunteer';
+    }, 500);
+}
+
+function assignRole() {
+    const email = document.getElementById('user-email-search').value;
+    const role = document.getElementById('role-select').value;
+    
+    if (!email) {
+        showToast('Digite um email válido', 'error');
+        return;
+    }
+    
+    // Aqui você faria a atualização real no Supabase
+    PermissionManager.updateUserRole(email, role)
+        .then(() => {
+            showToast(`Role ${role} atribuído com sucesso para ${email}`, 'success');
+            document.getElementById('current-role').textContent = role;
+        })
+        .catch(error => {
+            showToast('Erro ao atribuir role: ' + error.message, 'error');
+        });
 }
 
 // Inicialização da aplicação
@@ -5152,12 +5317,60 @@ function saveData() {
     }
 }
 
+// Função para atualizar status de conexão
+function updateConnectionStatus(connected = true) {
+    const statusElement = document.getElementById('connection-status');
+    const iconElement = document.getElementById('status-icon');
+    const textElement = document.getElementById('status-text');
+    
+    if (statusElement && iconElement && textElement) {
+        if (connected) {
+            statusElement.classList.remove('disconnected');
+            textElement.textContent = 'Conectado';
+        } else {
+            statusElement.classList.add('disconnected');
+            textElement.textContent = 'Desconectado';
+        }
+    }
+}
+
+// Função de logout
+function logout() {
+    if (confirm('Tem certeza que deseja sair?')) {
+        // Limpar dados de sessão se necessário
+        localStorage.removeItem('supabase_session');
+        
+        // Fazer logout do Supabase se estiver configurado
+        if (window.supabase) {
+            window.supabase.auth.signOut();
+        }
+        
+        // Recarregar a página para mostrar tela de login
+        window.location.reload();
+    }
+}
+
+// Verificar conexão periodicamente
+setInterval(() => {
+    if (window.supabase) {
+        checkSupabaseConnection().then(connected => {
+            updateConnectionStatus(connected);
+        }).catch(() => {
+            updateConnectionStatus(false);
+        });
+    } else {
+        updateConnectionStatus(false);
+    }
+}, 30000); // Verificar a cada 30 segundos
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         initializeApp();
         loadSupabaseConfig();
+        updateConnectionStatus(true); // Status inicial
     });
 } else {
     initializeApp();
     loadSupabaseConfig();
+    updateConnectionStatus(true); // Status inicial
 }

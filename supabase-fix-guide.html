@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Guia de Correção - Projeto Supabase</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+        .problem-alert {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        .solution-section {
+            margin: 25px 0;
+            padding: 20px;
+            border-left: 4px solid #4CAF50;
+            background-color: #f8f9fa;
+            border-radius: 0 10px 10px 0;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .step-number {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .btn {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Guia de Correção do Projeto Supabase</h1>
+            <p>Problema identificado: <strong>Projeto Supabase não encontrado</strong></p>
+        </div>
+
+        <div class="problem-alert">
+            ❌ <strong>PROBLEMA IDENTIFICADO:</strong><br>
+            A URL 'ymislcrrkcroahikwcm.supabase.co' não existe ou não pode ser acessada.<br>
+            Isso significa que o projeto Supabase foi deletado, pausado ou a URL está incorreta.
+        </div>
+
+        <div class="solution-section">
+            <h2>🎯 Soluções Possíveis</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Verificar se você tem acesso ao Dashboard do Supabase</strong>
+                <p>Acesse <a href="https://supabase.com/dashboard" target="_blank" class="btn">Dashboard Supabase</a> e verifique:</p>
+                <ul>
+                    <li>Se você está logado na conta correta</li>
+                    <li>Se o projeto ainda existe na lista de projetos</li>
+                    <li>Se o projeto foi pausado ou deletado</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Se o projeto existe, obter as credenciais corretas</strong>
+                <p>No dashboard do seu projeto:</p>
+                <ul>
+                    <li>Vá em <strong>Settings → API</strong></li>
+                    <li>Copie a <strong>Project URL</strong> e <strong>anon/public key</strong></li>
+                    <li>Substitua as credenciais no arquivo <code>supabase-config.js</code></li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Se o projeto não existe, criar um novo projeto</strong>
+                <p>Siga estes passos:</p>
+                <ol>
+                    <li>Acesse <a href="https://supabase.com/dashboard" target="_blank" class="btn btn-success">Criar Novo Projeto</a></li>
+                    <li>Clique em "New Project"</li>
+                    <li>Escolha um nome para o projeto (ex: "EventManager")</li>
+                    <li>Defina uma senha forte para o banco de dados</li>
+                    <li>Selecione a região mais próxima</li>
+                    <li>Aguarde a criação do projeto (pode levar alguns minutos)</li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>Configurar o novo projeto</strong>
+                <p>Após criar o projeto:</p>
+                <ul>
+                    <li>Copie as novas credenciais (URL e chave)</li>
+                    <li>Execute o schema SQL para criar as tabelas necessárias</li>
+                    <li>Configure as políticas RLS se necessário</li>
+                    <li>Habilite o registro de usuários em Auth → Settings</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="solution-section">
+            <h2>🔄 Como Atualizar as Credenciais</h2>
+            
+            <div class="warning">
+                <strong>⚠️ Importante:</strong> Você precisará atualizar o arquivo <code>supabase-config.js</code> com as novas credenciais.
+            </div>
+
+            <p>Substitua estas linhas no início do arquivo:</p>
+            <div class="code-block">
+let SUPABASE_URL = 'https://SEU_PROJETO_ID.supabase.co';
+let SUPABASE_ANON_KEY = 'SUA_CHAVE_ANONIMA_AQUI';
+            </div>
+
+            <p>Exemplo de credenciais válidas:</p>
+            <div class="code-block">
+let SUPABASE_URL = 'https://abcdefghijklmnop.supabase.co';
+let SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+            </div>
+        </div>
+
+        <div class="solution-section">
+            <h2>📋 Schema SQL para o Novo Projeto</h2>
+            
+            <p>Se você criar um novo projeto, execute este SQL no editor SQL do Supabase:</p>
+            <div class="code-block">
+-- Criar tabela de usuários (se não existir)
+CREATE TABLE IF NOT EXISTS public.users (
+    id UUID REFERENCES auth.users(id) PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    full_name TEXT,
+    avatar_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Habilitar RLS
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
+-- Política para usuários verem apenas seus próprios dados
+CREATE POLICY "Users can view own profile" ON public.users
+    FOR SELECT USING (auth.uid() = id);
+
+-- Política para usuários atualizarem apenas seus próprios dados
+CREATE POLICY "Users can update own profile" ON public.users
+    FOR UPDATE USING (auth.uid() = id);
+
+-- Função para criar perfil automaticamente
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.users (id, email, full_name)
+    VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger para criar perfil automaticamente
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+            </div>
+        </div>
+
+        <div class="success">
+            <h3>✅ Próximos Passos</h3>
+            <ol>
+                <li>Acesse o dashboard do Supabase</li>
+                <li>Verifique se o projeto existe ou crie um novo</li>
+                <li>Copie as credenciais corretas</li>
+                <li>Atualize o arquivo <code>supabase-config.js</code></li>
+                <li>Execute o schema SQL se for um projeto novo</li>
+                <li>Teste o registro novamente</li>
+            </ol>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="https://supabase.com/dashboard" target="_blank" class="btn btn-success">🚀 Ir para Dashboard Supabase</a>
+            <a href="test-register.html" class="btn">🔄 Testar Registro Novamente</a>
+        </div>
+    </div>
+</body>
+</html>

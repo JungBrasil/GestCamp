@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Registro - EventManager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        .info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Teste de Registro de Usuário</h1>
+        <p>Esta página testa especificamente o registro de usuários no Supabase.</p>
+        
+        <div style="margin-bottom: 20px;">
+            <button type="button" onclick="testSupabaseConfig()" style="margin-right: 10px;">🔧 Testar Configuração</button>
+            <button type="button" onclick="checkAuthSettings()" style="margin-right: 10px;">🔐 Verificar Auth</button>
+            <button type="button" onclick="testNetworkConnection()">🌐 Testar Rede</button>
+        </div>
+        
+        <form id="test-register-form">
+            <div class="form-group">
+                <label for="test-name">Nome Completo:</label>
+                <input type="text" id="test-name" value="Usuário Teste" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="test-email">Email:</label>
+                <input type="email" id="test-email" value="" required placeholder="Digite um email único para teste">
+            </div>
+            
+            <div class="form-group">
+                <label for="test-password">Senha:</label>
+                <input type="password" id="test-password" value="123456789" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="test-confirm-password">Confirmar Senha:</label>
+                <input type="password" id="test-confirm-password" value="123456789" required>
+            </div>
+            
+            <button type="submit">🚀 Testar Registro</button>
+        </form>
+        
+        <div id="log" class="log">Aguardando teste...
+</div>
+    </div>
+
+    <!-- Carregar Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
+    
+    <script>
+        const logElement = document.getElementById('log');
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logElement.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        document.getElementById('test-register-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            addLog('🧪 Iniciando teste de registro...', 'info');
+            
+            const name = document.getElementById('test-name').value;
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            const confirmPassword = document.getElementById('test-confirm-password').value;
+            
+            addLog(`📝 Dados do formulário:`, 'info');
+            addLog(`   Nome: ${name}`, 'info');
+            addLog(`   Email: ${email}`, 'info');
+            addLog(`   Senha: ${'*'.repeat(password.length)}`, 'info');
+            
+            // Validações
+            if (!name || !email || !password || !confirmPassword) {
+                addLog('❌ Erro: Todos os campos são obrigatórios', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                addLog('❌ Erro: As senhas não coincidem', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                addLog('❌ Erro: A senha deve ter pelo menos 6 caracteres', 'error');
+                return;
+            }
+            
+            addLog('✅ Validações passaram', 'success');
+            
+            // Testar conexão com Supabase
+            addLog('🔗 Testando conexão com Supabase...', 'info');
+            
+            if (!window.supabase) {
+                addLog('❌ Erro: Cliente Supabase não está disponível', 'error');
+                return;
+            }
+            
+            addLog('✅ Cliente Supabase disponível', 'success');
+            
+            // Testar AuthManager
+            if (!window.AuthManager) {
+                addLog('❌ Erro: AuthManager não está disponível', 'error');
+                return;
+            }
+            
+            addLog('✅ AuthManager disponível', 'success');
+            
+            try {
+                // Primeiro, testar diretamente com o cliente Supabase
+                addLog('🔍 Testando cliente Supabase diretamente...', 'info');
+                
+                const directResult = await window.supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: { full_name: name }
+                    }
+                });
+                
+                addLog('📋 Resultado direto do Supabase:', 'info');
+                addLog(`   Data: ${JSON.stringify(directResult.data, null, 2)}`, 'info');
+                addLog(`   Error: ${JSON.stringify(directResult.error, null, 2)}`, directResult.error ? 'error' : 'info');
+                
+                if (directResult.error) {
+                    addLog('❌ Erro no registro direto:', 'error');
+                    addLog(`   Mensagem: ${directResult.error.message}`, 'error');
+                    addLog(`   Código: ${directResult.error.code || 'N/A'}`, 'error');
+                    
+                    // Análise específica de erros
+                    if (directResult.error.message.includes('Email rate limit exceeded')) {
+                        addLog('⏰ Limite de taxa de email excedido - tente novamente mais tarde', 'error');
+                    } else if (directResult.error.message.includes('User already registered')) {
+                        addLog('👤 Usuário já registrado com este email', 'error');
+                    } else if (directResult.error.message.includes('Invalid email')) {
+                        addLog('📧 Email inválido', 'error');
+                    } else if (directResult.error.message.includes('Password should be at least')) {
+                        addLog('🔒 Senha muito fraca', 'error');
+                    } else if (directResult.error.message.includes('Signup is disabled')) {
+                        addLog('🚫 Registro desabilitado no projeto Supabase', 'error');
+                    }
+                    return;
+                }
+                
+                addLog('✅ Registro direto realizado com sucesso!', 'success');
+                
+                // Agora testar com AuthManager
+                addLog('📤 Testando AuthManager.signUp...', 'info');
+                
+                const result = await AuthManager.signUp(email + '.test', password, { full_name: name });
+                
+                addLog('✅ AuthManager também funcionou!', 'success');
+                addLog(`📋 Resultado AuthManager: ${JSON.stringify(result, null, 2)}`, 'success');
+                
+            } catch (error) {
+                addLog('❌ Erro no registro:', 'error');
+                addLog(`   Mensagem: ${error.message}`, 'error');
+                addLog(`   Código: ${error.code || 'N/A'}`, 'error');
+                addLog(`   Stack: ${error.stack}`, 'error');
+                
+                // Verificar se é erro de rede
+                if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+                    addLog('🌐 Problema de conectividade de rede detectado', 'error');
+                    addLog('💡 Sugestões:', 'info');
+                    addLog('   - Verifique sua conexão com a internet', 'info');
+                    addLog('   - Verifique se o URL do Supabase está correto', 'info');
+                    addLog('   - Verifique se não há bloqueio de CORS', 'info');
+                }
+                
+                // Verificar se é erro de configuração
+                if (error.message.includes('Invalid API key') || error.message.includes('Invalid URL')) {
+                    addLog('🔑 Problema de configuração do Supabase detectado', 'error');
+                    addLog('💡 Verifique as credenciais no arquivo supabase-config.js', 'info');
+                }
+            }
+        });
+        
+        // Funções de teste adicionais
+        async function testSupabaseConfig() {
+            addLog('🔧 Testando configuração do Supabase...', 'info');
+            
+            if (!window.supabase) {
+                addLog('❌ Cliente Supabase não disponível', 'error');
+                return;
+            }
+            
+            try {
+                // Testar se consegue fazer uma consulta básica
+                const { data, error } = await window.supabase.from('acampamentos').select('count').limit(1);
+                
+                if (error) {
+                    addLog(`❌ Erro na consulta: ${error.message}`, 'error');
+                    if (error.message.includes('relation "acampamentos" does not exist')) {
+                        addLog('💡 Tabelas não criadas - execute o schema SQL no Supabase', 'info');
+                    }
+                } else {
+                    addLog('✅ Configuração básica funcionando', 'success');
+                }
+            } catch (error) {
+                addLog(`❌ Erro de configuração: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkAuthSettings() {
+            addLog('🔐 Verificando configurações de autenticação...', 'info');
+            
+            if (!window.supabase) {
+                addLog('❌ Cliente Supabase não disponível', 'error');
+                return;
+            }
+            
+            try {
+                // Verificar se o signup está habilitado tentando um email inválido
+                const testResult = await window.supabase.auth.signUp({
+                    email: 'test-invalid-email-format',
+                    password: '123456'
+                });
+                
+                if (testResult.error) {
+                    if (testResult.error.message.includes('Signup is disabled')) {
+                        addLog('❌ Registro está DESABILITADO no projeto Supabase', 'error');
+                        addLog('💡 Vá para Authentication > Settings no painel do Supabase', 'info');
+                        addLog('💡 Habilite "Enable email confirmations" se necessário', 'info');
+                    } else if (testResult.error.message.includes('Invalid email')) {
+                        addLog('✅ Registro está habilitado (email inválido detectado)', 'success');
+                    } else {
+                        addLog(`⚠️ Erro inesperado: ${testResult.error.message}`, 'error');
+                    }
+                } else {
+                    addLog('⚠️ Resultado inesperado - sem erro com email inválido', 'info');
+                }
+            } catch (error) {
+                addLog(`❌ Erro ao verificar auth: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testNetworkConnection() {
+            addLog('🌐 Testando conectividade de rede...', 'info');
+            
+            try {
+                // Testar conexão direta com o Supabase
+                const supabaseUrl = 'https://ymislcrrkcroahikwcm.supabase.co';
+                
+                addLog(`📡 Testando conexão com ${supabaseUrl}...`, 'info');
+                
+                const response = await fetch(`${supabaseUrl}/rest/v1/`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltaXNsY3Jya2Nyb2VhaGlrd2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwODMwMzMsImV4cCI6MjA3MjY1OTAzM30.3usCMB-JMaHNgzhNW7Tolp2oOz8BzqV5yDLA69BFV_Q'
+                    }
+                });
+                
+                if (response.ok) {
+                    addLog('✅ Conexão de rede funcionando', 'success');
+                    addLog(`📊 Status: ${response.status}`, 'info');
+                } else {
+                    addLog(`❌ Erro HTTP: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ Erro de rede: ${error.message}`, 'error');
+                
+                if (error.message.includes('Failed to fetch')) {
+                    addLog('💡 Possíveis causas:', 'info');
+                    addLog('   - Sem conexão com internet', 'info');
+                    addLog('   - Firewall bloqueando', 'info');
+                    addLog('   - Problema de CORS', 'info');
+                    addLog('   - URL do Supabase incorreto', 'info');
+                }
+            }
+        }
+        
+        // Inicializar logs
+        addLog('🚀 Página de teste carregada', 'success');
+        addLog('📋 Verificando dependências...', 'info');
+        
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (window.supabase) {
+                    addLog('✅ Supabase carregado', 'success');
+                } else {
+                    addLog('❌ Supabase não carregado', 'error');
+                }
+                
+                if (window.AuthManager) {
+                    addLog('✅ AuthManager carregado', 'success');
+                } else {
+                    addLog('❌ AuthManager não carregado', 'error');
+                }
+                
+                addLog('🎯 Pronto para testar!', 'success');
+                addLog('💡 Use os botões acima para diagnósticos específicos', 'info');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
