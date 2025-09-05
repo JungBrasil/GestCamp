@@ -4,8 +4,8 @@
   "description": "GestCamp - Sistema de Gestão de Acampamentos e Eventos",
   "main": "index.html",
   "scripts": {
-    "start": "echo 'EventManager - Static Site'",
-    "build": "echo 'No build required for static site'"
+    "start": "echo 'Starting GestCamp server' && python -m http.server 8080 || npx serve .",
+    "build": "mkdir -p public && cp -r * public/ 2>/dev/null || (mkdir public 2>nul & xcopy /E /I /Y *.* public\ >nul 2>&1)"
   },
   "keywords": [
     "event-management",
