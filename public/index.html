@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Acampamentos Católicos</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1><i class="fas fa-cross"></i> Sistema de Gestão de Acampamentos Católicos</h1>
+            <div class="camp-selector" id="campSelector" style="display: none;">
+                <label for="acampamentoSelect">Acampamento Ativo:</label>
+                <select id="acampamentoSelect" onchange="selecionarAcampamento(this.value)">
+                    <option value="">Selecione um acampamento...</option>
+                </select>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-cloud" onclick="configSupabase()" id="configSupabaseBtn">
+                    <i class="fas fa-cog"></i> Configurar Nuvem
+                </button>
+                <button class="btn btn-sync" onclick="syncWithCloud()" id="syncBtn" style="display: none;">
+                    <i class="fas fa-sync"></i> Sincronizar
+                </button>
+                <button class="btn btn-upload" onclick="uploadToCloud()" id="uploadBtn" style="display: none;">
+                    <i class="fas fa-cloud-upload-alt"></i> Enviar para Nuvem
+                </button>
+                <button class="btn btn-primary" onclick="exportarDados()">
+                    <i class="fas fa-download"></i> Exportar Dados
+                </button>
+                <button class="btn btn-success" onclick="exportarPDF()">
+                    <i class="fas fa-file-pdf"></i> Exportar PDF
+                </button>
+                <button class="btn btn-secondary" onclick="importarDados()">
+                    <i class="fas fa-upload"></i> Importar Dados
+                </button>
+                <button class="btn btn-info" onclick="visualizarHistorico()">
+                    <i class="fas fa-history"></i> Histórico
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('acampamentos')">
+                <i class="fas fa-campground"></i> Acampamentos
+            </button>
+            <button class="tab-btn" onclick="showTab('setores')">
+                <i class="fas fa-tasks"></i> Setores
+            </button>
+            <button class="tab-btn" onclick="showTab('tribos')">
+                <i class="fas fa-users"></i> Tribos
+            </button>
+            <button class="tab-btn" onclick="showTab('campistas')">
+                <i class="fas fa-user-friends"></i> Campistas
+            </button>
+            <button class="tab-btn" onclick="showTab('equipe')">
+                <i class="fas fa-user-tie"></i> Equipe
+            </button>
+            <button class="tab-btn" onclick="showTab('financeiro')">
+                <i class="fas fa-dollar-sign"></i> Financeiro
+            </button>
+            <button class="tab-btn" onclick="showTab('organizacao')">
+                <i class="fas fa-clipboard-list"></i> Organização
+            </button>
+            <button class="tab-btn" onclick="showTab('dashboard')">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </button>
+        </nav>
+
+        <!-- Content Sections -->
+        <main class="main-content">
+            <!-- Acampamentos Tab -->
+            <section id="acampamentos" class="tab-content active">
+                <div class="section-header">
+                    <h2>Gestão de Acampamentos</h2>
+                    <button class="btn btn-primary" onclick="openModal('acampamento-form')">
+                        <i class="fas fa-plus"></i> Novo Acampamento
+                    </button>
+                </div>
+                
+                <div class="filters">
+                    <input type="text" id="acampamento-search" placeholder="Buscar acampamentos..." onkeyup="filterAcampamentos()">
+                    <select id="acampamento-modalidade-filter" onchange="filterAcampamentos()">
+                        <option value="">Todas as Modalidades</option>
+                        <option value="jovens">Jovens</option>
+                        <option value="casais">Casais</option>
+                        <option value="familias">Famílias</option>
+                        <option value="criancas">Crianças</option>
+                        <option value="adolescentes">Adolescentes</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="gerenciarModalidades()" title="Gerenciar Modalidades">
+                        <i class="fas fa-cog"></i> Modalidades
+                    </button>
+                    <select id="acampamento-status-filter" onchange="filterAcampamentos()">
+                        <option value="">Todos os Status</option>
+                        <option value="planejamento">Planejamento</option>
+                        <option value="inscricoes-abertas">Inscrições Abertas</option>
+                        <option value="em-andamento">Em Andamento</option>
+                        <option value="concluido">Concluído</option>
+                    </select>
+                </div>
+
+                <div id="acampamentos-list" class="data-list">
+                    <!-- Acampamentos serão carregados aqui -->
+                </div>
+            </section>
+
+            <!-- Setores Tab -->
+            <section id="setores" class="tab-content">
+                <div class="section-header">
+                    <h2>Setores de Trabalho</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="gerenciarSetoresAcampamento()">
+                            <i class="fas fa-link"></i> Associar Setores
+                        </button>
+                        <button class="btn btn-primary" onclick="openModal('setor-form')">
+                            <i class="fas fa-plus"></i> Novo Setor
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="acampamento-selector">
+                    <label for="setores-acampamento-select">Acampamento:</label>
+                    <select id="setores-acampamento-select" onchange="selecionarAcampamento(this.value)">
+                        <option value="">Selecione um acampamento</option>
+                    </select>
+                </div>
+                
+                <div class="setores-grid">
+                    <!-- Cards dos setores serão renderizados dinamicamente pelo JavaScript -->
+                </div>
+
+                <div id="setores-list" class="data-list">
+                    <!-- Lista detalhada de setores -->
+                </div>
+            </section>
+
+            <!-- Tribos Tab -->
+            <section id="tribos" class="tab-content">
+                <div class="section-header">
+                    <h2>Tribos/Times/Famílias</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="gerenciarTribosAcampamento()">
+                            <i class="fas fa-link"></i> Associar Tribos
+                        </button>
+                        <button class="btn btn-primary" onclick="openModal('tribo-form')">
+                            <i class="fas fa-plus"></i> Nova Tribo
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="acampamento-selector">
+                    <label for="tribos-acampamento-select">Acampamento:</label>
+                    <select id="tribos-acampamento-select" onchange="selecionarAcampamento(this.value)">
+                        <option value="">Selecione um acampamento</option>
+                    </select>
+                </div>
+                
+                <div class="filters">
+                    <input type="text" id="tribo-search" placeholder="Buscar tribos..." onkeyup="filterTribos()">
+                </div>
+
+                <div id="tribos-grid" class="tribos-grid">
+                    <!-- Tribos serão carregadas aqui -->
+                </div>
+            </section>
+
+            <!-- Campistas Tab -->
+            <section id="campistas" class="tab-content">
+                <div class="section-header">
+                    <h2>Campistas</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="gerenciarPerguntasPersonalizadas()">
+                            <i class="fas fa-question-circle"></i> Perguntas Personalizadas
+                        </button>
+                        <button class="btn btn-primary" onclick="openModal('campista-form')">
+                            <i class="fas fa-plus"></i> Novo Campista
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="acampamento-selector">
+                    <label for="campistas-acampamento-select">Acampamento:</label>
+                    <select id="campistas-acampamento-select" onchange="selecionarAcampamento(this.value)">
+                        <option value="">Selecione um acampamento</option>
+                    </select>
+                </div>
+                
+                <div class="filters">
+                    <input type="text" id="campista-search" placeholder="Buscar campistas..." onkeyup="filterCampistas()">
+                    <select id="campista-tribo-filter" onchange="filterCampistas()">
+                        <option value="">Todas as Tribos</option>
+                    </select>
+                    <select id="campista-status-filter" onchange="filterCampistas()">
+                        <option value="">Todos os Status</option>
+                        <option value="inscrito">Inscrito</option>
+                        <option value="confirmado">Confirmado</option>
+                        <option value="presente">Presente</option>
+                    </select>
+                </div>
+                
+                <div class="tribe-assignment-controls" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+                    <h4 style="margin: 0 0 15px 0; color: #495057;"><i class="fas fa-users"></i> Atribuição de Tribo</h4>
+                    <div class="d-flex gap-3 align-items-center flex-wrap">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="tribe-selector" style="margin-bottom: 5px; font-weight: 500;">Selecionar Tribo:</label>
+                            <select id="tribe-selector" class="form-control" style="min-width: 200px;">
+                                <option value="">Escolha uma tribo...</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="margin-bottom: 5px; font-weight: 500; display: block;">Ações:</label>
+                            <div class="d-flex gap-2">
+                                <button id="select-all-btn" class="btn btn-outline-primary btn-sm" onclick="toggleSelectAll()" disabled>
+                                    <i class="fas fa-check-square"></i> Selecionar Todos
+                                </button>
+                                <button id="assign-tribe-btn" class="btn btn-success btn-sm" onclick="assignSelectedToTribe()" disabled>
+                                    <i class="fas fa-arrow-right"></i> Atribuir à Tribo
+                                </button>
+                                <button id="remove-tribe-btn" class="btn btn-warning btn-sm" onclick="removeSelectedFromTribe()" disabled>
+                                    <i class="fas fa-times"></i> Remover da Tribo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="selection-info" class="mt-2" style="font-size: 0.9em; color: #6c757d;"></div>
+                </div>
+
+                <div id="campistas-list" class="data-list">
+                    <!-- Campistas serão carregados aqui -->
+                </div>
+            </section>
+
+            <!-- Equipe Tab -->
+            <section id="equipe" class="tab-content">
+                <div class="section-header">
+                    <h2>Equipe de Trabalho</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="gerenciarPerguntasPersonalizadas()">
+                            <i class="fas fa-question-circle"></i> Perguntas Personalizadas
+                        </button>
+                        <button class="btn btn-primary" onclick="openModal('equipe-form')">
+                            <i class="fas fa-plus"></i> Novo Membro
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="acampamento-selector">
+                    <label for="equipe-acampamento-select">Acampamento:</label>
+                    <select id="equipe-acampamento-select" onchange="selecionarAcampamento(this.value)">
+                        <option value="">Selecione um acampamento</option>
+                    </select>
+                </div>
+                
+                <div class="filters">
+                    <input type="text" id="equipe-search" placeholder="Buscar membros da equipe..." onkeyup="filterEquipe()">
+                    <select id="equipe-setor-filter" onchange="filterEquipe()">
+                        <option value="">Todos os Setores</option>
+                    </select>
+                    <select id="equipe-funcao-filter" onchange="filterEquipe()">
+                        <option value="">Todas as Funções</option>
+                        <option value="coordenador">Coordenador</option>
+                        <option value="lider">Líder</option>
+                        <option value="auxiliar">Auxiliar</option>
+                    </select>
+                </div>
+
+                <div id="equipe-list" class="data-list">
+                    <!-- Equipe será carregada aqui -->
+                </div>
+            </section>
+
+            <!-- Financeiro Tab -->
+            <section id="financeiro" class="tab-content">
+                <div class="section-header">
+                    <h2>Controle Financeiro</h2>
+                    <div class="header-buttons">
+                        <button class="btn btn-success" onclick="openModal('pagamento-form')">
+                            <i class="fas fa-plus"></i> Novo Pagamento
+                        </button>
+                        <button class="btn btn-danger" onclick="openModal('despesa-form')">
+                            <i class="fas fa-minus"></i> Nova Despesa
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="acampamento-selector">
+                    <label for="financeiro-acampamento-select">Acampamento:</label>
+                    <select id="financeiro-acampamento-select" onchange="selecionarAcampamento(this.value)">
+                        <option value="">Selecione um acampamento</option>
+                    </select>
+                </div>
+                
+                <div class="financial-summary">
+                    <div class="summary-card receitas">
+                        <i class="fas fa-arrow-up"></i>
+                        <div>
+                            <h3>Total Receitas</h3>
+                            <span id="total-receitas">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="summary-card despesas">
+                        <i class="fas fa-arrow-down"></i>
+                        <div>
+                            <h3>Total Despesas</h3>
+                            <span id="total-despesas">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="summary-card saldo">
+                        <i class="fas fa-balance-scale"></i>
+                        <div>
+                            <h3>Saldo</h3>
+                            <span id="saldo-total">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="financial-tabs">
+                    <button class="financial-tab-btn active" onclick="showFinancialTab('pagamentos')">
+                        Pagamentos
+                    </button>
+                    <button class="financial-tab-btn" onclick="showFinancialTab('despesas')">
+                        Despesas
+                    </button>
+                    <button class="financial-tab-btn" onclick="showFinancialTab('livro-caixa')">
+                        Livro Caixa
+                    </button>
+                </div>
+
+                <div id="pagamentos-tab" class="financial-tab-content active">
+                    <div class="d-flex justify-between items-center mb-3">
+                        <h3>Pagamentos</h3>
+                        <button class="btn btn-primary" onclick="showModal(getPagamentoForm())">
+                            <i class="fas fa-plus"></i> Novo Pagamento
+                        </button>
+                    </div>
+                    <div id="pagamentos-list" class="data-list">
+                        <!-- Pagamentos serão carregados aqui -->
+                    </div>
+                </div>
+
+                <div id="despesas-tab" class="financial-tab-content">
+                    <div class="d-flex justify-between items-center mb-3">
+                        <h3>Despesas</h3>
+                        <button class="btn btn-primary" onclick="showModal(getDespesaForm())">
+                            <i class="fas fa-plus"></i> Nova Despesa
+                        </button>
+                    </div>
+                    <div id="despesas-list" class="data-list">
+                        <!-- Despesas serão carregadas aqui -->
+                    </div>
+                </div>
+
+                <div id="livro-caixa-tab" class="financial-tab-content">
+                    <div id="livro-caixa" class="data-list">
+                        <!-- Livro caixa será carregado aqui -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Organização Tab -->
+            <section id="organizacao" class="tab-content">
+                <div class="section-header">
+                    <h2>Organização Pós-Cadastro</h2>
+                </div>
+                
+                <div class="organization-tools">
+                    <div class="tool-card">
+                        <h3>Distribuir em Tribos</h3>
+                        <p>Organize campistas automaticamente em tribos</p>
+                        <button class="btn btn-primary" onclick="openDistribuirTribos()">
+                            <i class="fas fa-random"></i> Distribuir
+                        </button>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <h3>Alocar em Setores</h3>
+                        <p>Distribua equipe pelos setores de trabalho</p>
+                        <button class="btn btn-primary" onclick="openAlocarSetores()">
+                            <i class="fas fa-sitemap"></i> Alocar
+                        </button>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <h3>Lista de Presença</h3>
+                        <p>Gere listas de presença por tribo/setor</p>
+                        <button class="btn btn-primary" onclick="gerarListaPresenca()">
+                            <i class="fas fa-clipboard-check"></i> Gerar
+                        </button>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <h3>Crachás</h3>
+                        <p>Imprima crachás personalizados</p>
+                        <button class="btn btn-primary" onclick="gerarCrachas()">
+                            <i class="fas fa-id-card"></i> Gerar
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Tab -->
+            <section id="dashboard" class="tab-content">
+                <div class="section-header">
+                    <h2>Painel Administrativo</h2>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Estatísticas Gerais</h3>
+                        <div id="stats-gerais">
+                            <div class="stat-item">
+                                <span class="stat-label">Total de Acampamentos:</span>
+                                <span class="stat-value" id="total-acampamentos">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Total de Campistas:</span>
+                                <span class="stat-value" id="total-campistas">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Total da Equipe:</span>
+                                <span class="stat-value" id="total-equipe">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Próximos Acampamentos</h3>
+                        <div id="proximos-acampamentos">
+                            <!-- Próximos acampamentos -->
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Alertas e Notificações</h3>
+                        <div id="alertas-notificacoes">
+                            <!-- Alertas serão carregados aqui -->
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Relatórios Rápidos</h3>
+                        <div class="quick-reports">
+                            <button class="btn btn-outline" onclick="gerarRelatorioGeral()">
+                                <i class="fas fa-file-pdf"></i> Relatório Geral
+                            </button>
+                            <button class="btn btn-outline" onclick="gerarRelatorioFinanceiro()">
+                                <i class="fas fa-chart-line"></i> Relatório Financeiro
+                            </button>
+                            <button class="btn btn-outline" onclick="gerarRelatorioPresenca()">
+                                <i class="fas fa-users"></i> Relatório de Presença
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Distribuição por Modalidade</h3>
+                        <div id="grafico-modalidades" class="grafico-container">
+                            <!-- Gráfico de modalidades -->
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Distribuição Etária</h3>
+                        <div id="grafico-idades" class="grafico-container">
+                            <!-- Gráfico de idades -->
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card dashboard-card-wide">
+                        <h3>Evolução Financeira (Últimos 6 Meses)</h3>
+                        <div id="grafico-financeiro" class="grafico-financeiro-container">
+                            <!-- Gráfico financeiro -->
+                        </div>
+                        <div class="grafico-legenda">
+                            <div class="legenda-item">
+                                <div class="legenda-cor receita"></div>
+                                <span>Receitas</span>
+                            </div>
+                            <div class="legenda-item">
+                                <div class="legenda-cor despesa"></div>
+                                <span>Despesas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modal-body">
+                <!-- Formulários serão carregados aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
