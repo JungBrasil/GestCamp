@@ -249,8 +249,8 @@ class SupabaseSync {
             // Mesclar com dados locais
             appData = { ...appData, ...cloudData };
             
-            // Salvar localmente como backup
-            saveData();
+            // Salvar localmente como backup (sem sincronizar para evitar loop)
+            saveData(true);
             
             // Atualizar interface
             loadAcampamentos();
@@ -524,8 +524,8 @@ class AuthManager {
             if (userPagamentos.length > 0) appData.financeiro.pagamentos = userPagamentos;
             if (userDespesas.length > 0) appData.financeiro.despesas = userDespesas;
             
-            // Salvar localmente
-            saveData();
+            // Salvar localmente (sem sincronizar para evitar loop)
+            saveData(true);
             
             // Atualizar interface
             if (typeof loadAcampamentos === 'function') loadAcampamentos();

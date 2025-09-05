@@ -5334,17 +5334,30 @@ function loadSupabaseConfig() {
     }
 }
 
+// Flag para controlar recursão
+let isSyncing = false;
+
 // Modificar função saveData para sincronizar com nuvem
 const originalSaveData = saveData;
-function saveData() {
+function saveData(skipSync = false) {
     originalSaveData();
+    
+    // Evitar recursão infinita
+    if (skipSync || isSyncing) {
+        return;
+    }
     
     // Sincronizar automaticamente se conectado
     if (checkSupabaseConnection()) {
         // Debounce para evitar muitas chamadas
         clearTimeout(window.syncTimeout);
         window.syncTimeout = setTimeout(() => {
-            SupabaseSync.uploadLocalData().catch(console.error);
+            isSyncing = true;
+            SupabaseSync.uploadLocalData()
+                .catch(console.error)
+                .finally(() => {
+                    isSyncing = false;
+                });
         }, 2000);
     }
 }
