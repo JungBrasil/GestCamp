@@ -1,0 +1,25 @@
+{
+  "name": "gestcamp",
+  "version": "1.0.0",
+  "description": "GestCamp - Sistema de Gestão de Acampamentos e Eventos",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo 'EventManager - Static Site'",
+    "build": "echo 'No build required for static site'"
+  },
+  "keywords": [
+    "event-management",
+    "camping",
+    "supabase",
+    "javascript"
+  ],
+  "author": "Seu Nome",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SEU_USUARIO/gestcamp.git"
+  },
+  "homepage": "https://gestcamp.vercel.app"
+}
