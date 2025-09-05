@@ -4,7 +4,6 @@
   "outputDirectory": "./public",
   "installCommand": "echo 'No dependencies to install'",
   "framework": null,
-  "functions": {},
   "routes": [
     {
       "src": "/(.*)",

@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "start": "echo 'Starting GestCamp server' && python -m http.server 8080 || npx serve .",
-    "build": "powershell -Command \"if (!(Test-Path public)) { New-Item -ItemType Directory -Name public }; Copy-Item index.html public/; Copy-Item styles.css public/; Copy-Item script.js public/; Copy-Item supabase-config.js public/\""
+    "build": "node -e \"const fs = require('fs'); if (!fs.existsSync('public')) fs.mkdirSync('public'); ['index.html', 'styles.css', 'script.js', 'supabase-config.js'].forEach(f => fs.copyFileSync(f, 'public/' + f))\""
   },
   "keywords": [
     "event-management",
