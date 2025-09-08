@@ -150,17 +150,8 @@ function loadData() {
     }
 }
 
-// Salvamento de dados no localStorage
-function saveData() {
-    try {
-        appData.configuracoes.ultimaAtualizacao = new Date().toISOString();
-        localStorage.setItem('acampamentosCatolicos', JSON.stringify(appData));
-        console.log('Dados salvos com sucesso');
-    } catch (error) {
-        console.error('Erro ao salvar dados:', error);
-        showToast('Erro ao salvar dados', 'error');
-    }
-}
+// Salvamento de dados no localStorage - função será redefinida mais abaixo com proteção contra recursão
+// Esta função temporária será substituída pela versão com sincronização automática
 
 // Gerenciamento de roles de usuário (apenas para admins)
 function showUserManagement() {
@@ -5306,9 +5297,18 @@ function loadSupabaseConfig() {
 let isSyncing = false;
 
 // Modificar função saveData para sincronizar com nuvem
-const originalSaveData = saveData;
+// Função saveData com proteção contra recursão e sincronização automática
 function saveData(skipSync = false) {
-    originalSaveData();
+    // Salvamento local
+    try {
+        appData.configuracoes.ultimaAtualizacao = new Date().toISOString();
+        localStorage.setItem('acampamentosCatolicos', JSON.stringify(appData));
+        console.log('Dados salvos com sucesso');
+    } catch (error) {
+        console.error('Erro ao salvar dados:', error);
+        showToast('Erro ao salvar dados', 'error');
+        return;
+    }
     
     // Evitar recursão infinita
     if (skipSync || isSyncing) {
